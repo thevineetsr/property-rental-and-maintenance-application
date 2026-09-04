@@ -3,7 +3,16 @@ import requests
 from typing import Optional, Dict, Any, List
 import streamlit as st
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000") + "/api"
+raw_base = os.getenv("API_BASE_URL")
+if not raw_base:
+    try:
+        raw_base = st.secrets.get("API_BASE_URL")
+    except Exception:
+        raw_base = None
+if not raw_base:
+    raw_base = "http://127.0.0.1:8000"
+
+API_BASE_URL = raw_base.rstrip("/") + "/api"
 
 
 class ApiError(Exception):

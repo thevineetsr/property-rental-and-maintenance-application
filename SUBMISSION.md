@@ -2,7 +2,7 @@
 
 ## Links
 
-- **GitHub repository:** <public repo URL>
+- **GitHub repository:** https://github.com/thevineetsr/property-rental-and-maintenance-application
 - **Live application:** <deployed URL>
 
 ## Notes for the reviewer
@@ -54,11 +54,7 @@ A few practical pointers to help you navigate and test the project:
 
 ## How much time did you actually spend?
 
-Around **11.5 hours** total over 2 days:
-- ~2.5 hours on data modeling, foreign keys, Alembic migration setup, and Supabase connection
-- ~4 hours on backend services (lifecycle state machine, bulk rent classifier, timeline logging) and writing the 23 automated pytest cases
-- ~3.5 hours on Streamlit views, API client integration, and custom CSS styling
-- ~1.5 hours on edge-case testing, seed data, and documentation
+Around **11.5 hours** total.
 
 ## What would you do next, with another 12 hours?
 
