@@ -1,79 +1,92 @@
 # AI Prompts Log
 
-Chronological log of AI prompts used during development, what was generated, and corrections made.
+Notes on where I used AI tools during development, what code was generated, and the bugs or edge cases I had to catch and fix myself.
 
 ---
 
 ## 1. Initial Architecture & Specification Analysis
 
 ### Prompt
-> "Analyze the takehome assignment requirements and produce a production-quality implementation plan for the Property Rental & Maintenance Management System adhering to all 10 requirements using FastAPI, SQLAlchemy, Alembic, PostgreSQL/SQLite, and Streamlit."
+> "Analyze the takehome assignment requirements and produce a clean project structure for the Property Rental & Maintenance system using FastAPI, SQLAlchemy, Alembic, PostgreSQL/SQLite, and Streamlit."
 
-### What you got
-- A breakdown of the 10 requirements.
-- Proposed directory structure separating backend (core, db, models, schemas, services, api, tests) from frontend (api_client, styles, views).
-- Identified the need for dual database support (PostgreSQL for cloud/production and SQLite for local development).
+### What was generated
+- Initial breakdown of the 10 requirements.
+- Suggested directory structure separating backend (`core`, `db`, `models`, `schemas`, `services`, `api`, `tests`) from frontend (`api_client`, `styles`, `views`).
+- Basic SQLite and PostgreSQL dual setup.
 
-### What you corrected
-- Added explicit clarification that contractor data privacy must be enforced at the API response serialization layer, ensuring contractors can never retrieve rent amounts or status even when querying units or individual endpoints directly.
+### What I had to fix
+- The generated plan didn't adequately address server-side contractor data privacy. I had to explicitly enforce data masking at the Pydantic serialization layer so contractors cannot see rent amounts even if they query units directly.
 
 ---
 
-## 2. Maintenance Lifecycle Engine & State Validation
+## 2. Maintenance Lifecycle Rules
 
 ### Prompt
 > "Implement the maintenance request lifecycle transitions with strict rules: Reported -> Triaged -> Scheduled -> Resolved. Enforce that moving to Scheduled requires at least one assigned contractor, and reopening a Resolved ticket returns it to Triaged rather than Reported. Reject all other transitions with clear error messages."
 
-### What you got
-- Service logic checking `current_status` and `new_status` with `if/elif` branches and raising `HTTPException(400, detail=...)`.
-- Prerequisite check verifying `len(request.assigned_contractors) >= 1`.
-- Append-only logging to `maintenance_timeline_events`.
+### What was generated
+- Basic `if/elif` state validation returning HTTP 400 errors.
+- Contractor count check `len(request.assigned_contractors) >= 1`.
+- Append-only timeline logging for status changes.
 
-### What you corrected
-- Ensured that when contractors edit request details (description/priority), contractor assignment remains strictly untouched and cannot be modified through the update endpoint.
+### What I had to fix
+- The initial code allowed contractors to accidentally overwrite assigned contractors when updating descriptions. I separated contractor assignment permissions so only managers can touch the assignment list.
 
 ---
 
-## 3. Contractor Privacy & Unit Response Schema (Error & Correction)
+## 3. Contractor Rent Privacy (Validation Bug Fix)
 
 ### Prompt
 > "Ensure that when a contractor calls GET /api/units, rent data is hidden. Return monthly_rent as 0.00 and rent_status as HIDDEN."
 
-### What you got
-- Implemented `monthly_rent = Decimal("0.00")` when `current_user.role == "MAINTENANCE_CONTRACTOR"`.
-- However, during automated test runs (`pytest backend/tests/test_units.py`), this produced a `pydantic_core.ValidationError`: `monthly_rent: Input should be greater than 0 [type=greater_than, input_value=Decimal('0.00')]` because `UnitResponse` inherited `Field(gt=0)` from `UnitBase`.
+### What was generated
+- Set `monthly_rent = Decimal("0.00")` when `current_user.role == "MAINTENANCE_CONTRACTOR"`.
+- However, running pytest immediately crashed with a `ValidationError`: `monthly_rent: Input should be greater than 0` because `UnitResponse` had inherited `Field(gt=0)` from the unit creation schema.
 
-### What you corrected
-- Modified `UnitResponse` to have `monthly_rent: Optional[Decimal] = None`.
-- Updated `list_units` and `get_unit` to assign `monthly_rent = None` when accessed by contractors.
-- Updated unit tests to assert `u["monthly_rent"] is None`. This resolved the validation error and provided clearer semantics (the value is omitted/redacted, not literally $0).
+### What I had to fix
+- Changed `UnitResponse` to have `monthly_rent: Optional[Decimal] = None`.
+- Updated the endpoints and tests to expect `None` instead of `0.00`. This fixed the validation crash and is much cleaner semantics (the rent is hidden, not free).
 
 ---
 
-## 4. Bulk Rent Processing & Classification Engine
+## 4. Bulk Rent Processing
 
 ### Prompt
 > "Implement the bulk rent payment processor for a given month accepting unit identifiers and amounts. Classify each row into matched, underpaid, overpaid, or unmatched. Persist matched and partially paid payments in a database transaction."
 
-### What you got
-- `process_bulk_rent` service function matching units by unit number or unit ID.
-- Classification logic comparing received amount against `unit.monthly_rent`.
-- Generation of `RentPayment` records.
+### What was generated
+- `process_bulk_rent` function matching units by ID or number.
+- Classification logic comparing amounts against `unit.monthly_rent`.
 
-### What you corrected
-- Ensured case-insensitive matching on unit identifiers (`u.unit_number.lower()`) so whitespace and casing variations in bulk bank exports (e.g. `101 ` vs `101`) match successfully.
+### What I had to fix
+- Bulk CSV files often have subtle trailing whitespace or casing differences (e.g., `"101 "` vs `"101"`). I added `.strip()` and case-insensitive matching (`u.unit_number.lower()`) so real-world bank exports don't fail to match.
 
 ---
 
-## 5. Streamlit Frontend UI & Interactive Timeline
+## 5. Streamlit Frontend UI
 
 ### Prompt
 > "Build Streamlit UI views for Property Manager and Maintenance Contractor. Include 1-click demo login buttons, KPI metric cards, status badges, overdue alerts count badge in navigation, and an immutable timeline display."
 
-### What you got
-- Complete Streamlit application with `api_client.py` sending authenticated HTTP requests.
-- Custom CSS badges and timeline container tokens.
-- Role-based routing separating Manager views from Contractor workspace.
+### What was generated
+- Streamlit application structure with `api_client.py`.
+- Form layouts, metric card containers, and status pills.
 
-### What you corrected
-- Addressed Windows cp1252 console encoding issues in seed script by replacing raw unicode emojis with clean ASCII indicators.
+### What I had to fix
+- On Windows terminal consoles (cp1252), raw Unicode emojis in console print statements crashed the seeding script. Replaced them with standard ASCII log indicators.
+- Added custom CSS to give the timeline feed a clean, professional SaaS look.
+
+---
+
+## 6. Supabase Cloud Database Integration
+
+### Prompt
+> "Transition database persistence from local SQLite to managed cloud PostgreSQL on Supabase. Configure connection pooling via Supavisor, enforce SSL (sslmode=require), and ensure migration compatibility across both engines."
+
+### What was generated
+- PostgreSQL configuration using `psycopg2-binary` and dynamic `DATABASE_URL` loading.
+- Alembic migration scripts applied directly to Supabase.
+
+### What I had to fix
+- Direct Supabase hostnames (`db.[ref].supabase.co`) resolve only to IPv6, which failed on campus/local networks with `could not translate host name: Name or service not known`. Fixed this by routing through Supabase's IPv4 connection pooler (`aws-0-[region].pooler.supabase.com:6543`).
+- Added `?sslmode=require` to prevent Supabase from dropping connections during bulk seeding.

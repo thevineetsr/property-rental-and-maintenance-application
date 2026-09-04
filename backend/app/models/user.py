@@ -15,6 +15,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
+    test = Column(String(255), unique=False, index=False, nullable=True)
     password_hash = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default=UserRole.PROPERTY_MANAGER.value)

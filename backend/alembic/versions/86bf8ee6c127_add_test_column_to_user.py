@@ -1,8 +1,8 @@
-"""initial_schema
+"""add test column to user
 
-Revision ID: bb9db453bbb6
+Revision ID: 86bf8ee6c127
 Revises: 
-Create Date: 2026-09-01 11:29:04.479200
+Create Date: 2026-09-04 13:36:00.988313
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'bb9db453bbb6'
+revision: str = '86bf8ee6c127'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -40,6 +40,7 @@ def upgrade() -> None:
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
+    sa.Column('test', sa.String(length=255), nullable=True),
     sa.Column('password_hash', sa.String(length=255), nullable=False),
     sa.Column('full_name', sa.String(length=255), nullable=False),
     sa.Column('role', sa.String(length=50), nullable=False),

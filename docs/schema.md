@@ -1,5 +1,7 @@
 # Database Schema Documentation
 
+The database schema is implemented for PostgreSQL (hosted in production on Supabase, with full local SQLite fallback compatibility). All tables, constraints, foreign keys, and indexes are tracked and versioned via Alembic migrations.
+
 ## Table-by-Table Definitions
 
 ### 1. `users`
@@ -21,8 +23,8 @@ Represents physical rental units in the property portfolio.
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | `INTEGER` | `PRIMARY KEY`, Autoincrement | Unique unit ID |
-| `unit_number` | `VARCHAR(50)` | `NOT NULL`, Indexed | Unit label/number (e.g. "101", "Penthouse A") |
-| `address` | `VARCHAR(255)` | `NOT NULL` | Physical building/street address |
+| `unit_number` | `VARCHAR(50)` | `NOT NULL`, Indexed | Unit label (e.g. "101", "Penthouse A") |
+| `address` | `VARCHAR(255)` | `NOT NULL` | street address |
 | `monthly_rent` | `NUMERIC(10, 2)` | `NOT NULL`, Positive | Base monthly contract rent amount |
 | `tenant_name` | `VARCHAR(255)` | `NULLABLE` | Current occupying tenant name; null if vacant |
 | `archived` | `BOOLEAN` | `NOT NULL`, Default `FALSE`, Indexed | Soft-deletion flag preserving history |
@@ -140,6 +142,6 @@ At 100x data (e.g., 5,000+ units, 100,000+ payments, 50,000+ maintenance request
 2. **Weekly Resolved Maintenance Trend (Past 8 Weeks)**:
    - The dashboard currently computes resolved counts across 8 date ranges using individual query counts.
    - *Remedy*: Replace with a single SQL query using `GROUP BY date_trunc('week', created_at)` with an index on `maintenance_timeline_events(event_type, new_value, created_at)`.
-3. **Connection Pooling**:
-   - At high concurrent user traffic, default connection pools would exhaust.
-   - *Remedy*: Configure SQLAlchemy `pool_size=20`, `max_overflow=30`, and connect through PgBouncer.
+3. **Database Connection Limits & Pooling**:
+   - At high concurrent API traffic, direct PostgreSQL connections can saturate server limits.
+   - *Remedy*: Connect through Supabase's managed connection pooler (Supavisor) in Session mode (`port 5432 / 6543`), configuring SQLAlchemy with `pool_size=20`, `max_overflow=10`, and `pool_pre_ping=True` to maintain resilient connection lifecycles without leaks.
