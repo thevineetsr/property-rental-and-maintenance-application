@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
@@ -6,6 +7,21 @@ from backend.app.api.units import router as units_router
 from backend.app.api.rent import router as rent_router
 from backend.app.api.maintenance import router as maintenance_router
 from backend.app.api.dashboard import router as dashboard_router
+from backend.app.db.base import Base
+from backend.app.db.database import engine
+from backend.app.seed import seed
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Auto-initialize database tables and seed demo data on server boot
+    try:
+        Base.metadata.create_all(bind=engine)
+        seed()
+    except Exception as e:
+        print(f"[STARTUP WARNING] Database initialization: {e}")
+    yield
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -13,6 +29,7 @@ app = FastAPI(
     description="Production-grade Property Rental & Maintenance Management API with role-based access control and strict server-side lifecycle rules.",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Enable CORS for Streamlit frontend and local testing
