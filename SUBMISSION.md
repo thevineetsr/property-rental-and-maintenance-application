@@ -3,28 +3,31 @@
 ## Links
 
 - **GitHub repository:** https://github.com/thevineetsr/property-rental-and-maintenance-application
-- **Live application:** <deployed URL>
+- **Live application:** https://property-rental-and-maintenance-application-8ewy3dp2pgddijkyuc.streamlit.app/
+- **Backend API (Swagger Docs):** https://property-rental-and-maintenance.onrender.com/docs
+
+## Demo Credentials for Reviewer / Interviewer
+
+| Role | Email (User ID) | Password | What this role can do |
+|------|-----------------|----------|----------------------|
+| **Admin / Manager** | `admin@property.com` | `admin123` | Full portfolio access: view rent roll, process bulk payments, assign contractors, edit units. |
+| **Property Manager** | `manager@property.com` | `Manager123!` | Full portfolio access: view rent roll, process bulk payments, assign contractors, edit units. |
+| **Contractor (General)** | `mridul@contractor.com` | `mridul123` | Contractor workspace: view assigned maintenance tickets, update progress, add notes. Rent data is completely redacted. |
+| **Contractor (Plumbing/HVAC)** | `bob@contractor.com` | `Contractor123!` | Sees only plumbing/HVAC tickets assigned to him. Rent data is completely redacted. |
+| **Contractor (Electrical)** | `alice@contractor.com` | `Contractor123!` | Sees only electrical tickets assigned to her. Cannot view or assign other contractors. |
 
 ## Notes for the reviewer
 
 A few practical pointers to help you navigate and test the project:
 
-- **Quick Login**: On the login screen, you don't need to manually type credentials — just click any of the **Quick Login** buttons to immediately test as the Property Manager or as either of the two Maintenance Contractors.
-- **Interactive API Docs**: FastAPI's Swagger docs are available at `/docs` (or `http://127.0.0.1:8000/docs` locally) where you can interactively test all routes, schema validations, and role restrictions.
+- **Quick Login**: On the login screen, you don't need to manually type credentials — just click any of the **Quick Login** buttons to immediately test as Admin/Manager or as any of the Maintenance Contractors.
+- **Interactive API Docs**: FastAPI's Swagger docs are available at `https://property-rental-and-maintenance.onrender.com/docs` (or `http://127.0.0.1:8000/docs` locally) where you can interactively test all routes, schema validations, and role restrictions.
 - **Running Locally**:
   - Backend: `python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload`
   - Frontend: `python -m streamlit run frontend/app.py --server.port 8501`
   - Automated tests: `python -m pytest backend/tests/ -v` (23 tests covering auth, roles, lifecycle transitions, bulk rent, and timeline immutability).
   - Re-seed demo data: `python -m backend.app.seed`
 - **Database Flexibility**: The app connects to cloud PostgreSQL on Supabase by default (with SSL and connection pooling), but you can also swap `DATABASE_URL` in `.env` to SQLite (`sqlite:///./property_rental.db`) for a completely offline, zero-setup run.
-
-## Demo credentials
-
-| Role | Email | Password | What this role can do |
-|------|-------|----------|----------------------|
-| **Property Manager** | `manager@property.com` | `Manager123!` | Full portfolio access: view rent roll, process bulk payments, assign contractors, edit units. |
-| **Contractor (Plumbing/HVAC)** | `bob@contractor.com` | `Contractor123!` | Sees only plumbing/HVAC tickets assigned to him. Rent data is completely redacted. |
-| **Contractor (Electrical)** | `alice@contractor.com` | `Contractor123!` | Sees only electrical tickets assigned to her. Cannot view or assign other contractors. |
 
 ## Stack
 

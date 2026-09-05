@@ -19,16 +19,24 @@ def render_login_view():
 
         with tab_login:
             st.markdown("##### Quick Demo Access (1-Click Fill)")
-            demo_col1, demo_col2, demo_col3 = st.columns(3)
-            with demo_col1:
-                if st.button("🏢 Manager\n(Sarah)", use_container_width=True):
+            row1_col1, row1_col2 = st.columns(2)
+            with row1_col1:
+                if st.button("👑 Admin / Manager\n(admin@property.com)", use_container_width=True):
+                    _do_login("admin@property.com", "admin123")
+            with row1_col2:
+                if st.button("🏢 Manager (Sarah)\n(manager@property.com)", use_container_width=True):
                     _do_login("manager@property.com", "Manager123!")
-            with demo_col2:
-                if st.button("🔧 Plumber\n(Bob)", use_container_width=True):
+
+            row2_col1, row2_col2, row2_col3 = st.columns(3)
+            with row2_col1:
+                if st.button("🔧 Plumber (Bob)", use_container_width=True):
                     _do_login("bob@contractor.com", "Contractor123!")
-            with demo_col3:
-                if st.button("⚡ Electrician\n(Alice)", use_container_width=True):
+            with row2_col2:
+                if st.button("⚡ Electrician (Alice)", use_container_width=True):
                     _do_login("alice@contractor.com", "Contractor123!")
+            with row2_col3:
+                if st.button("🔨 Contractor (Mridul)", use_container_width=True):
+                    _do_login("mridul@contractor.com", "mridul123")
 
             st.markdown("---")
             with st.form("login_form"):

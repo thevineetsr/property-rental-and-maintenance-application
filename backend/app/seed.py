@@ -47,6 +47,16 @@ def seed():
             )
             db.add(manager)
 
+        admin = db.query(User).filter(User.email == "admin@property.com").first()
+        if not admin:
+            admin = User(
+                email="admin@property.com",
+                password_hash=hash_password("admin123"),
+                full_name="Admin Manager",
+                role=UserRole.PROPERTY_MANAGER.value
+            )
+            db.add(admin)
+
         contractor_bob = db.query(User).filter(User.email == "bob@contractor.com").first()
         if not contractor_bob:
             contractor_bob = User(
@@ -66,6 +76,16 @@ def seed():
                 role=UserRole.MAINTENANCE_CONTRACTOR.value
             )
             db.add(contractor_alice)
+
+        contractor_mridul = db.query(User).filter(User.email == "mridul@contractor.com").first()
+        if not contractor_mridul:
+            contractor_mridul = User(
+                email="mridul@contractor.com",
+                password_hash=hash_password("mridul123"),
+                full_name="Mridul Contractor (General Maintenance)",
+                role=UserRole.MAINTENANCE_CONTRACTOR.value
+            )
+            db.add(contractor_mridul)
 
         db.flush()
 
