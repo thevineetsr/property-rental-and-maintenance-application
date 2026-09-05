@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,11 +16,12 @@ from backend.app.seed import seed
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Auto-initialize database tables and seed demo data on server boot
-    try:
-        Base.metadata.create_all(bind=engine)
-        seed()
-    except Exception as e:
-        print(f"[STARTUP WARNING] Database initialization: {e}")
+    if os.environ.get("TESTING") != "1":
+        try:
+            Base.metadata.create_all(bind=engine)
+            seed()
+        except Exception as e:
+            print(f"[STARTUP WARNING] Database initialization: {e}")
     yield
 
 

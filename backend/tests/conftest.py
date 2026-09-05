@@ -1,3 +1,5 @@
+import os
+os.environ["TESTING"] = "1"
 import pytest
 from decimal import Decimal
 from fastapi.testclient import TestClient

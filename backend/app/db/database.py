@@ -2,12 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from backend.app.core.config import settings
 
-# Determine connect_args based on DB dialect
 connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
-elif "sslmode" not in settings.DATABASE_URL:
-    # Enforce SSL for managed cloud PostgreSQL (e.g. Supabase, Render)
+else:
     connect_args = {"sslmode": "require"}
 
 engine = create_engine(
